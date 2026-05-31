@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrack Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0f1a;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --border: #1e2d45;
+            --accent: #3b82f6;
+            --accent-soft: rgba(59,130,246,0.12);
+            --green: #10b981;
+            --green-soft: rgba(16,185,129,0.12);
+            --amber: #f59e0b;
+            --amber-soft: rgba(245,158,11,0.12);
+            --red: #ef4444;
+            --red-soft: rgba(239,68,68,0.12);
+            --text: #f1f5f9;
+            --text-muted: #64748b;
+            --text-dim: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background grid effect */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 240px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 28px 0;
+            z-index: 10;
+        }
+
+        .logo {
+            padding: 0 24px 32px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo-text {
+            font-family: 'DM Serif Display', serif;
+            font-size: 22px;
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: var(--accent);
+        }
+
+        .logo-sub {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-top: 3px;
+        }
+
+        .nav {
+            padding: 20px 12px;
+            flex: 1;
+        }
+
+        .nav-label {
+            font-size: 10px;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 0 12px;
+            margin-bottom: 8px;
+            margin-top: 20px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: var(--text-dim);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+
+        .nav-item:hover { background: var(--surface2); color: var(--text); }
+        .nav-item.active { background: var(--accent-soft); color: var(--accent); }
+
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+        .sidebar-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 600;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .user-info { flex: 1; min-width: 0; }
+        .user-name { font-size: 13px; font-weight: 600; color: var(--text); }
+        .user-role { font-size: 11px; color: var(--text-muted); }
+
+        /* Main Content */
+        .main {
+            margin-left: 240px;
+            padding: 32px 36px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 36px;
+        }
+
+        .page-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 28px;
+            letter-spacing: -0.5px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .date-badge {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeUp 0.4s ease both;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.05s; }
+        .stat-card:nth-child(2) { animation-delay: 0.10s; }
+        .stat-card:nth-child(3) { animation-delay: 0.15s; }
+        .stat-card:nth-child(4) { animation-delay: 0.20s; }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+        }
+
+        .stat-card.blue::before { background: linear-gradient(90deg, var(--accent), transparent); }
+        .stat-card.green::before { background: linear-gradient(90deg, var(--green), transparent); }
+        .stat-card.amber::before { background: linear-gradient(90deg, var(--amber), transparent); }
+        .stat-card.purple::before { background: linear-gradient(90deg, #8b5cf6, transparent); }
+
+        .stat-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card.blue .stat-icon { background: var(--accent-soft); }
+        .stat-card.green .stat-icon { background: var(--green-soft); }
+        .stat-card.amber .stat-icon { background: var(--amber-soft); }
+        .stat-card.purple .stat-icon { background: rgba(139,92,246,0.12); }
+
+        .stat-value {
+            font-family: 'DM Serif Display', serif;
+            font-size: 32px;
+            letter-spacing: -1px;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-card.blue .stat-value { color: var(--accent); }
+        .stat-card.green .stat-value { color: var(--green); }
+        .stat-card.amber .stat-value { color: var(--amber); }
+        .stat-card.purple .stat-value { color: #8b5cf6; }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
+        }
+
+        /* Table Card */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            overflow: hidden;
+            animation: fadeUp 0.4s ease 0.25s both;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .badge {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .badge-blue { background: var(--accent-soft); color: var(--accent); }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            padding: 12px 24px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(30,45,69,0.5);
+            transition: background 0.15s;
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: var(--surface2); }
+
+        td {
+            padding: 14px 24px;
+            font-size: 13.5px;
+            color: var(--text-dim);
+            vertical-align: middle;
+        }
+
+        .appt-id {
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .patient-cell { color: var(--text); font-weight: 500; }
+
+        /* Status badges */
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status::before {
+            content: '';
+            width: 6px; height: 6px;
+            border-radius: 50%;
+        }
+
+        .status-pending { background: var(--amber-soft); color: var(--amber); }
+        .status-pending::before { background: var(--amber); }
+        .status-confirmed { background: var(--green-soft); color: var(--green); }
+        .status-confirmed::before { background: var(--green); }
+        .status-cancelled { background: var(--red-soft); color: var(--red); }
+        .status-cancelled::before { background: var(--red); }
+        .status-completed { background: var(--accent-soft); color: var(--accent); }
+        .status-completed::before { background: var(--accent); }
+
+        /* Side panel */
+        .side-panel { display: flex; flex-direction: column; gap: 16px; }
+
+        .mini-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            animation: fadeUp 0.4s ease 0.3s both;
+        }
+
+        .mini-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mini-title span { font-size: 15px; }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(30,45,69,0.5);
+        }
+
+        .activity-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .activity-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            margin-top: 5px;
+            flex-shrink: 0;
+        }
+
+        .activity-text {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        .activity-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+        .empty-text { font-size: 14px; }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="logo">
+        <div class="logo-text">Medi<span>Track</span></div>
+        <div class="logo-sub">Admin Panel</div>
+    </div>
+
+    <nav class="nav">
+        <div class="nav-label">Main</div>
+        <a class="nav-item active" href="#">
+            <span class="nav-icon">⊞</span> Dashboard
+        </a>
+        <a class="nav-item" href="/docs">
+            <span class="nav-icon">⚡</span> API Docs
+        </a>
+
+        <div class="nav-label">Manage</div>
+        <a class="nav-item" href="#">
+            <span class="nav-icon">👤</span> Patients
+        </a>
+        <a class="nav-item" href="#">
+            <span class="nav-icon">🩺</span> Doctors
+        </a>
+        <a class="nav-item" href="#">
+            <span class="nav-icon">📅</span> Appointments
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-chip">
+            <div class="avatar">A</div>
+            <div class="user-info">
+                <div class="user-name">Admin</div>
+                <div class="user-role">Super Admin</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+    <div class="header">
+        <div>
+            <div class="page-title">Dashboard</div>
+            <div class="page-subtitle">Patient appointment overview</div>
+        </div>
+        <div class="header-right">
+            <div class="date-badge" id="dateDisplay"></div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">👤</div>
+            <div class="stat-value">{{ p_count }}</div>
+            <div class="stat-label">Total Patients</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-icon">🩺</div>
+            <div class="stat-value">{{ d_count }}</div>
+            <div class="stat-label">Total Doctors</div>
+        </div>
+        <div class="stat-card amber">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value">{{ appointments | length }}</div>
+            <div class="stat-label">Total Appointments</div>
+        </div>
+        <div class="stat-card purple">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value">{{ appointments | selectattr('status', 'equalto', 'confirmed') | list | length }}</div>
+            <div class="stat-label">Confirmed</div>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+
+        <!-- Appointments Table -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">All Appointments</div>
+                    <div class="card-subtitle">Complete appointment records</div>
+                </div>
+                <span class="badge badge-blue">{{ appointments | length }} total</span>
+            </div>
+
+            {% if appointments %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>#ID</th>
+                        <th>Patient ID</th>
+                        <th>Doctor ID</th>
+                        <th>Date</th>
+                        <th>Time Slot</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in appointments %}
+                    <tr>
+                        <td><span class="appt-id">#{{ a.id }}</span></td>
+                        <td><span class="patient-cell">P-{{ a.patient_id }}</span></td>
+                        <td>D-{{ a.doctor_id }}</td>
+                        <td>{{ a.appointment_date }}</td>
+                        <td>{{ a.time_slot }}</td>
+                        <td>
+                            <span class="status status-{{ a.status }}">{{ a.status | capitalize }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <div class="empty-text">No appointments yet</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Side Panel -->
+        <div class="side-panel">
+            <div class="mini-card">
+                <div class="mini-title"><span>📊</span> Status Breakdown</div>
+
+                {% set statuses = [('pending', '#f59e0b'), ('confirmed', '#10b981'), ('cancelled', '#ef4444'), ('completed', '#3b82f6')] %}
+                {% for status, color in statuses %}
+                {% set count = appointments | selectattr('status', 'equalto', status) | list | length %}
+                <div class="activity-item">
+                    <div class="activity-dot" style="background: {{ color }}"></div>
+                    <div>
+                        <div class="activity-text">{{ status | capitalize }}</div>
+                        <div class="activity-time">{{ count }} appointment{{ 's' if count != 1 }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="mini-card">
+                <div class="mini-title"><span>⚡</span> Quick Links</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <a href="/docs" style="display:flex; align-items:center; gap:10px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); color: var(--text-dim); text-decoration: none; font-size: 13px; font-weight: 500; transition: color 0.15s;">
+                        <span>⚡</span> Swagger API Docs
+                    </a>
+                    <a href="/patients/register" style="display:flex; align-items:center; gap:10px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); color: var(--text-dim); text-decoration: none; font-size: 13px; font-weight: 500;">
+                        <span>➕</span> Register Patient
+                    </a>
+                    <a href="/auth/login" style="display:flex; align-items:center; gap:10px; padding: 10px 12px; border-radius: 8px; background: var(--surface2); color: var(--text-dim); text-decoration: none; font-size: 13px; font-weight: 500;">
+                        <span>🔐</span> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+    const d = new Date();
+    document.getElementById('dateDisplay').textContent = d.toLocaleDateString('en-IN', {
+        weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+    });
+</script>
+
+</body>
+</html>
+
